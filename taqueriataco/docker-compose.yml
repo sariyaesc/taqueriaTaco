@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tacos}
+      POSTGRES_USER: ${POSTGRES_USER:-tacos_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tacos_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tacos_user} -d ${POSTGRES_DB:-tacos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - taco_net
+
+  web:
+    build: .
+    working_dir: /app
+    command: sh scripts/entrypoint.sh
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: backend.settings
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - taco_net
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - taco_net
+
+volumes:
+  db_data:
+
+networks:
+  taco_net:
