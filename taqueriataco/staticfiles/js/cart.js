@@ -31,6 +31,9 @@ async function addToCart(productId) {
         const data = await res.json();
         const el = document.getElementById('cart-count');
         if (el) el.textContent = data.cart_count;
+    } else {
+        console.error('addToCart failed', res.status, await res.text());
+        alert('No se pudo agregar el producto al carrito (ver consola)');
     }
 }
 
@@ -50,6 +53,9 @@ async function updateCart(productId, quantity) {
         const el = document.getElementById('cart-count');
         if (el) el.textContent = data.cart_count;
         location.reload();
+    } else {
+        console.error('updateCart failed', res.status, await res.text());
+        alert('No se pudo actualizar el carrito (ver consola)');
     }
 }
 
@@ -68,5 +74,8 @@ async function removeFromCart(productId) {
         const el = document.getElementById('cart-count');
         if (el) el.textContent = data.cart_count;
         location.reload();
+    } else {
+        console.error('removeFromCart failed', res.status, await res.text());
+        alert('No se pudo eliminar el producto (ver consola)');
     }
 }

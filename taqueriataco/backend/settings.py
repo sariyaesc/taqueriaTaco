@@ -134,7 +134,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 # Serve and collect static into a single folder `static/` to keep files consolidated.
 # During development we will use `static/` as the single static root.
-STATICFILES_DIRS = []
+# During development there is an existing `staticfiles/` folder (from collectstatic)
+# include it so `{% static %}` can find assets until you consolidate into `static/`.
+STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
 STATIC_ROOT = BASE_DIR / 'static'
 
 # Media (for product images if uploaded)
