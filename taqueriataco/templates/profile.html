@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="row">
+    {% if show_login %}
+      <div class="col-12 d-flex align-items-center justify-content-center">
+        {% include 'partials/signin_form.html' %}
+      </div>
+    {% else %}
+      <div class="col-md-6">
+        <h1>¡Bienvenid@! :)</h1>
+        <p>Usuario registrado: {{ request.user.username }}</p>
+        <a href="{% url 'logout' %}" class="btn btn-secondary">Cerrar sesión</a>
+      </div>
+      <div class="col-md-6">
+        <h3>Historial de Pedidos</h3>
+        {% for order in orders %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5>Total: ${{ order.total_price }}</h5>
+              <p>Orden hecha el {{ order.created_at|date:'d/m/Y H:i' }}</p>
+              <div class="d-flex">
+                {% for item in order.items.all %}
+                  <div class="me-3 text-center">
+                    <img src="{{ item.product.image }}" style="width:120px;height:70px;object-fit:cover" alt="{{ item.product.name }}">
+                    <div>{{ item.product.name }}</div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p>No hay pedidos todavía.</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

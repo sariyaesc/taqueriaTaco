@@ -1,0 +1,25 @@
+{# Reusable register form partial. Expects `form` in the template context. #}
+<main class="form-signin w-100 m-auto" style="max-width:420px;">
+  <form method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+    <h1 class="h3 mb-3 fw-normal text-center">Regístrate</h1>
+
+    <div class="form-floating mb-2">
+      {{ form.username }}
+      <label for="id_username">Username</label>
+    </div>
+
+    <div class="form-floating mb-2">
+      {{ form.password1 }}
+      <label for="id_password1">Password</label>
+    </div>
+
+    <div class="form-floating mb-3">
+      {{ form.password2 }}
+      <label for="id_password2">Confirm Password</label>
+    </div>
+
+    <button class="w-100 btn btn-lg btn-primary btn-pill" type="submit">Continuar</button>
+    <p class="mt-3 text-center">¿Ya tienes cuenta? <a href="{% url 'signin' %}">Inicia sesión</a></p>
+  </form>
+</main>
