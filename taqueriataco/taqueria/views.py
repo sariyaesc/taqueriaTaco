@@ -2,12 +2,17 @@ from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from .forms import RegisterForm
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
 
 from .models import Product, Order, OrderItem
+import logging
+
+logger = logging.getLogger(__name__)
 from .cart import Cart
+from .email import send_order_confirmation_async
 
 
 def home(request):
@@ -17,9 +22,9 @@ def home(request):
 
 def register_view(request):
 	if request.method == 'POST':
-		form = UserCreationForm(request.POST)
+		form = RegisterForm(request.POST)
 		# Add Bootstrap classes/placeholders to form fields so floating labels work
-		for name in ('username', 'password1', 'password2'):
+		for name in ('username', 'email', 'password1', 'password2'):
 			if name in form.fields:
 				w = form.fields[name].widget
 				w.attrs.setdefault('class', '')
@@ -31,8 +36,8 @@ def register_view(request):
 			login(request, user)
 			return redirect('profile')
 	else:
-		form = UserCreationForm()
-		for name in ('username', 'password1', 'password2'):
+		form = RegisterForm()
+		for name in ('username', 'email', 'password1', 'password2'):
 			if name in form.fields:
 				w = form.fields[name].widget
 				w.attrs.setdefault('class', '')
@@ -58,6 +63,12 @@ def signin_view(request):
 		if form.is_valid():
 			user = form.get_user()
 			login(request, user)
+			# If an email was provided on the signin form, save/update it on the User account
+			email = request.POST.get('email')
+			if email:
+				if not user.email or user.email != email:
+					user.email = email
+					user.save()
 			# support next parameter from GET or POST (form on /profile/ posts next)
 			next_url = request.POST.get('next') or request.GET.get('next') or reverse('home')
 			return redirect(next_url)
@@ -137,12 +148,20 @@ def cart_remove(request):
 
 @login_required
 def checkout(request):
+	# Only allow POST to create an order to avoid accidental re-orders via GET refresh.
+	if request.method != 'POST':
+		return redirect('cart')
+
 	cart = Cart(request)
+	logger.info("Checkout initiated by user=%s cart_items=%s", request.user.username, len(cart))
 	if len(cart) == 0:
 		return redirect('cart')
 
-	# Create order and order items
-	# When a user completes checkout, mark the order as done/completed
+	# Ensure user has an email before creating the order (optional safeguard)
+	if not request.user.email:
+		# Could add a message framework note here; simple redirect for now.
+		return redirect('profile')
+
 	order = Order.objects.create(user=request.user, status=Order.STATUS_DONE)
 	for item in cart:
 		OrderItem.objects.create(
@@ -152,6 +171,11 @@ def checkout(request):
 			price_snapshot=item['price'],
 			subtotal=item['subtotal'],
 		)
+
+	try:
+		send_order_confirmation_async(order, request)
+	except Exception as e:
+		logger.exception("Order confirmation email failed for order %s", order.id)
 
 	cart.clear()
 	return redirect('success')

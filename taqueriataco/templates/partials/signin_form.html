@@ -8,6 +8,10 @@
       {{ form.username }}
       <label for="id_username">Username</label>
     </div>
+    <div class="form-floating mb-2">
+      <input type="email" name="email" id="id_email" class="form-control" placeholder="Email" value="{{ request.POST.email|default:'' }}">
+      <label for="id_email">Email (optional)</label>
+    </div>
     <div class="form-floating mb-3">
       {{ form.password }}
       <label for="id_password">Password</label>

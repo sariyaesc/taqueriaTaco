@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Confirmación de pedido</title>
+  </head>
+  <body>
+    <h2>Gracias {{ user.first_name|default:user.username }}!</h2>
+    <p>Hemos recibido tu pedido <strong>#{{ order.id }}</strong>.</p>
+
+    <h3>Resumen</h3>
+    <ul>
+      {% for item in order.items.all %}
+        <li>{{ item.product.name }} — {{ item.quantity }} x ${{ item.price_snapshot }} = ${{ item.subtotal }}</li>
+      {% endfor %}
+    </ul>
+
+    <p><strong>Total:</strong> ${{ order.total_price }}</p>
+
+    <p>Si tienes preguntas, responde a este correo.</p>
+    <p>Saludos,<br>Taquería</p>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+Gracias {{ user.first_name|default:user.username }},
+
+Hemos recibido tu pedido #{{ order.id }}.
+
+Resumen del pedido:
+
+
+{% for item in order.items.all %}
+- {{ item.product.name }} — {{ item.quantity }} x ${{ item.price_snapshot }} = ${{ item.subtotal }}
+{% endfor %}
+
+Total: ${{ order.total_price }}
+
+Gracias por comprar en Taquería.

@@ -159,3 +159,58 @@ LOGOUT_REDIRECT_URL = '/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email configuration (defaults to console backend for development)
+# Override via environment variables when deploying with real SMTP.
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Taqueria Taco <no-reply@taqueriataco.local>')
+
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')  # e.g. smtp.gmail.com
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587')) if os.getenv('EMAIL_HOST') else None
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', '1') in ['1', 'true', 'True', 'yes'] if os.getenv('EMAIL_HOST') else False
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', '0') in ['1', 'true', 'True', 'yes'] if os.getenv('EMAIL_HOST') else False
+
+# If a real EMAIL_HOST is provided and SSL is requested, disable TLS to avoid conflicts.
+if EMAIL_USE_SSL:
+    EMAIL_USE_TLS = False
+
+# Basic logging so email/order issues surface in container logs.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '[{levelname}] {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'taqueria': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
+
+if os.getenv('EMAIL_HOST'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', '1') in ['1', 'true', 'True', 'yes']
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@localhost')
