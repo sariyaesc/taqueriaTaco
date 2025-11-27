@@ -25,7 +25,14 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-	list_display = ('name', 'created_at')
+	list_display = ('name', 'color_display', 'created_at')
+	readonly_fields = ('color_display',)
+
+	def color_display(self, obj):
+		if obj.color:
+			return format_html('<div style="width:48px;height:20px;background:{0};border-radius:4px;"></div>', obj.color)
+		return ''
+	color_display.short_description = 'Color'
 
 
 @admin.register(OrderItem)

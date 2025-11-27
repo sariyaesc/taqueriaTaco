@@ -8,6 +8,8 @@ from django.core.validators import MinValueValidator
 
 class Category(models.Model):
 	name = models.CharField(max_length=200)
+	# Hex color code used for badges (e.g. #3b82f6). Assigned automatically when empty.
+	color = models.CharField(max_length=7, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	class Meta:
@@ -15,6 +17,17 @@ class Category(models.Model):
 
 	def __str__(self):
 		return self.name
+
+	def save(self, *args, **kwargs):
+		# Auto-assign a random pastel-ish hex color when none provided
+		if not self.color:
+			import random
+			# Generate a random pastel color by mixing with white
+			r = int((random.randint(0, 255) + 255) / 2)
+			g = int((random.randint(0, 255) + 255) / 2)
+			b = int((random.randint(0, 255) + 255) / 2)
+			self.color = '#{0:02x}{1:02x}{2:02x}'.format(r, g, b)
+		super().save(*args, **kwargs)
 
 
 class Product(models.Model):

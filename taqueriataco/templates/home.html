@@ -1,28 +1,35 @@
 {% extends 'base.html' %}
+{% load image_utils %}
 
 {% block content %}
   <h1 class="mb-4">Menú de Tacos</h1>
-  <div class="row">
+  <div class="products-grid">
     {% for p in products %}
-      <div class="col-md-6 mb-4">
-        <div class="card">
-          <div class="row g-0">
-            <div class="col-md-4">
-              {% if p.image %}
-                <img src="{{ p.image }}" class="img-fluid" alt="{{ p.name }}">
-              {% else %}
-                <div style="height:100%;background:#e9ecef;display:flex;align-items:center;justify-content:center">No image</div>
-              {% endif %}
-            </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <h5 class="card-title">{{ p.name }}</h5>
-                <p class="card-text">{{ p.description|truncatechars:120 }}</p>
-                <p class="card-text"><strong>${{ p.price }}</strong></p>
-                <div class="d-flex align-items-center">
-                  <input type="number" min="1" value="1" id="qty-{{ p.id }}" class="form-control me-2" style="width:90px">
-                  <button class="btn btn-primary" onclick="addToCart({{ p.id }})">Agregar</button>
+      <div class="mb-4">
+        <div class="card product-card">
+          <div class="image-col">
+            {% with img_url=p.image|direct_image_url %}
+              {% if img_url %}
+                <div class="img-wrap">
+                  <img src="{{ img_url }}" alt="{{ p.name }}" 
+                       onerror="this.onerror=null;this.src='https://via.placeholder.com/240x140?text=No+image'" />
                 </div>
+              {% else %}
+                <div class="img-wrap" style="background:#e9ecef;display:flex;align-items:center;justify-content:center">No image</div>
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div>
+            <div class="card-body">
+              <h5 class="card-title">{{ p.name }}</h5>
+              <div class="mb-2">
+                <span class="badge" style="background: {{ p.category.color|default:'#6c757d' }}; color:#fff;">{{ p.category.name }}</span>
+              </div>
+              <p class="card-text">{{ p.description|truncatechars:120 }}</p>
+              <p class="card-text"><strong>${{ p.price }}</strong></p>
+              <div class="d-flex align-items-center">
+                <input type="number" min="1" value="1" id="qty-{{ p.id }}" class="form-control me-2" style="width:90px">
+                <button class="btn btn-primary" onclick="addToCart({{ p.id }})">Agregar</button>
               </div>
             </div>
           </div>

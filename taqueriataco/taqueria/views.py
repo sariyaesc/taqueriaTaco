@@ -142,7 +142,8 @@ def checkout(request):
 		return redirect('cart')
 
 	# Create order and order items
-	order = Order.objects.create(user=request.user)
+	# When a user completes checkout, mark the order as done/completed
+	order = Order.objects.create(user=request.user, status=Order.STATUS_DONE)
 	for item in cart:
 		OrderItem.objects.create(
 			order=order,
