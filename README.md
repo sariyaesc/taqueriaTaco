@@ -1,4 +1,4 @@
-# Taquería Taco — Django demo app
+# Taquería Taco 
 
 **Características del proyecto**
 
